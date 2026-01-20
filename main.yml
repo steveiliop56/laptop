@@ -1,0 +1,23 @@
+---
+- name: Configure host
+  hosts: all
+
+  vars_files:
+    - config.yml
+
+  tasks:
+    - import_tasks: tasks/base_packages.yml
+      when: configure_base_packages
+      tags: ["base_packages"]
+
+    - import_tasks: tasks/dev_tools.yml
+      when: configure_dev_tools
+      tags: ["dev_tools"]
+
+    - import_tasks: tasks/customization.yml
+      when: configure_customization
+      tags: ["customization"]
+
+    - import_tasks: tasks/misc.yml
+      when: configure_misc
+      tags: ["misc"]

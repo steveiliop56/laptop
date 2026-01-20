@@ -1,0 +1,102 @@
+---
+- name: Setup microsoft repo
+  become: true
+  ansible.builtin.shell: |
+    rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\nautorefresh=1\ntype=rpm-md\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" | tee /etc/yum.repos.d/vscode.repo
+  args:
+    creates: /etc/yum.repos.d/vscode.repo
+
+- name: Ensure the ghostty repository is enabled
+  become: true
+  ansible.builtin.shell: |
+    dnf copr enable -y scottames/ghostty
+
+- name: Install dnf packages
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - gparted
+      - syncthing
+      - btop
+      - gnome-extensions-app
+      - gnome-tweaks
+      - steam
+      - code
+      - python3-pip
+      - ghostty
+      - dnf5-plugins
+    state: present
+    update_cache: true
+
+- name: Install chrome
+  become: true
+  ansible.builtin.dnf:
+    name: https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+    disable_gpg_check: true
+    state: present
+
+- name: Install amdgpu_top
+  become: true
+  ansible.builtin.dnf:
+    name: https://github.com/Umio-Yasuno/amdgpu_top/releases/download/v0.11.0/amdgpu_top-0.11.0-1.x86_64.rpm
+    disable_gpg_check: true
+    state: present
+
+- name: Install flatpak packages
+  become: true
+  community.general.flatpak:
+    name:
+      - com.discordapp.Discord
+      - com.prusa3d.PrusaSlicer
+      - com.slack.Slack
+      - com.spotify.Client
+      - com.usebruno.Bruno
+      - com.viber.Viber
+      - fr.handbrake.ghb
+      - md.obsidian.Obsidian
+      - org.kde.okular
+      - org.sqlitebrowser.sqlitebrowser
+    state: present
+
+- name: Install zed
+  ansible.builtin.shell: |
+    curl -f https://zed.dev/install.sh | sh
+  args:
+    creates: /home/{{ username }}/.local/bin/zed
+
+- name: Install github cli
+  ansible.bultin.shell: |
+    sudo dnf config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo
+    sudo dnf install gh -y --repo gh-cli
+  args:
+    creates: /usr/bin/gh
+
+- name: Install tailscale
+  become: true
+  ansible.builtin.shell: |
+    curl -fsSL https://tailscale.com/install.sh | sh
+    tailscale up --auth-key={{ tailscale_auth_key }}
+  args:
+    creates: /usr/bin/tailscale
+
+- name: Install docker
+  become: true
+  ansible.builtin.shell: |
+    curl -fsSL https://get.docker.com | sh
+  args:
+    creates: /usr/bin/docker
+
+- name: Add the user to the docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ username }}"
+    groups: docker
+    append: yes
+
+- name: Install ohmybash
+  ansible.builtin.shell: |
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+    sed -i 's/OSH_THEME="font"/OSH_THEME="pure"/' /home/{{ username }}/.bashrc
+  args:
+    creates: /home/{{ username }}/.oh-my-bash/oh-my-bash.sh

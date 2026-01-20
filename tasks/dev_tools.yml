@@ -1,0 +1,34 @@
+---
+- name: Install atuin
+  ansible.builtin.shell: |
+    curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+    mkdir -p /home/{{ username }}/.config/atuin/
+    /home/{{ username }}/.atuin/bin/atuin default-config | tee /home/{{ username }}/.config/atuin/atuin.toml
+    sed -i 's/# inline_height = 0/inline_height = 0/' /home/{{ username }}/.config/atuin/atuin.toml
+  args:
+    creates: /home/{{ username }}/.atuin/bin/atuin
+
+- name: Install go
+  become: true
+  ansible.builtin.shell: |
+    wget -q https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz
+    rm -rf /usr/local/go
+    tar -C /usr/local -xzf go{{ go_version }}.linux-amd64.tar.gz
+    echo -e "# Go\nexport PATH=\$PATH:/usr/local/go/bin" >> /etc/profile
+  args:
+    chdir: /tmp
+    creates: /usr/local/go/bin/go
+
+- name: Install nvm and node
+  ansible.builtin.shell: |
+    curl -s -o- https://raw.githubusercontent.com/nvm-sh/nvm/v{{ nvm_version }}/install.sh | bash
+    source /home/{{ username }}/.bashrc
+    nvm install node
+  args:
+    creates: /home/{{ username }}/.nvm/nvm.sh
+
+- name: Install bun
+  ansible.builtin.shell: |
+    curl -fsSL https://bun.com/install | bash
+  args:
+    creates: /home/{{ username }}/.bun/bin/bun

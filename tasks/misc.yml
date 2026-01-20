@@ -1,0 +1,6 @@
+---
+- name: Create wakatime config
+  ansible.builtin.shell: |
+    echo -e "[settings]\napi_url = {{ wakatime_api_url }}\napi_key = {{ wakatime_api_key }}" > /home/{{ username }}/.wakatime.cfg
+  args:
+    creates: /home/{{ username }}/.wakatime.cfg

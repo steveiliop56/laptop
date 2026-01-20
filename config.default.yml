@@ -1,0 +1,31 @@
+---
+# Base username
+username: stavros
+
+# What to configure
+# Base packages includes everything that I use daily
+configure_base_packages: true
+
+# Developer tools are the tools that I use to develop my software
+configure_dev_tools: true
+
+# My prefered grub themes, icon themes and other tweaks
+configure_customization: true
+
+# Miscellaneous configuration
+configure_misc: true
+
+# Developer options
+# Go version to install
+go_version: 1.25.6
+
+# NVM version to install
+nvm_version: 0.40.3
+
+# Other options
+# Tailscale authentication key
+tailscale_auth_key: ""
+
+# Wakatime configuration
+wakatime_api_url: ""
+wakatime_api_key: ""

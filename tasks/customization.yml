@@ -1,0 +1,65 @@
+---
+- name: Set ghostty theme
+  ansible.builtin.shell: |
+    grep -qF -- "theme = Dark+" /home/{{ username }}/.config/ghostty/config || echo "theme = Dark+" >> /home/{{ username }}/.config/ghostty/config
+
+- name: Setup Tela icon theme
+  ansible.builtin.shell: |
+    git clone https://github.com/vinceliuice/Tela-icon-theme.git
+    cd Tela-icon-theme/
+    bash install.sh
+  args:
+    chdir: /tmp
+    creates: /home/{{ username }}/.local/share/icons/Tela/index.theme
+
+- name: Setup elegant grub theme
+  become: true
+  ansible.builtin.shell: |
+    git clone https://github.com/vinceliuice/Elegant-grub2-themes.git
+    cp /etc/default/grub /etc/default/grub.original
+    cd Elegant-grub2-themes/
+    bash install.sh -t forest -p sharp -i right -c dark -s 2k -b
+  args:
+    chdir: /tmp
+    creates: /boot/grub2/themes/Elegant-forest-sharp-right-dark/theme.txt
+# Let's ignore these for now
+# - name: Install psutil with pip
+#   become: true
+#   ansible.builtin.pip:
+#     name: psutil
+#     state: present
+
+# - name: Set Tela icon theme as default
+#   community.general.dconf:
+#     key: "/org/gnome/desktop/interface/icon-theme"
+#     value: "'Tela'"
+
+# - name: Set screenshot keybind
+#   community.general.dconf:
+#     key: "/org/gnome/shell/keybindings/show-screenshot-ui"
+#     value: "['<Shift><Super>s']"
+
+# - name: Enable maximized and minimize buttons
+#   community.general.dconf:
+#     key: "/org/gnome/desktop/wm/preferences/button-layout"
+#     value: "'appmenu:minimize,maximize,close'"
+
+# - name: Set mru sources
+#   community.general.dconf:
+#     key: "/org/gnome/desktop/input-sources/mru-sources"
+#     value: "[('xkb', 'us'), ('xkb', 'gr')]"
+
+# - name: Set sources
+#   community.general.dconf:
+#     key: "/org/gnome/desktop/input-sources/sources"
+#     value: "[('xkb', 'us'), ('xkb', 'gr')]"
+
+# - name: Set language change method
+#   community.general.dconf:
+#     key: "/org/gnome/desktop/input-sources/xkb-options"
+#     value: "['grp:alt_shift_toggle']"
+
+# - name: Always show accesibility menu
+#   community.general.dconf:
+#     key: "/org/gnome/desktop/a11y/always-show-universal-access-status"
+#     value: "'true'"
