@@ -6,6 +6,11 @@
     - config.yml
 
   tasks:
+    - name: Set a hostname
+      ansible.builtin.hostname:
+        name: "{{ username }}-stavros"
+        use: systemd
+
     - import_tasks: tasks/base_packages.yml
       when: configure_base_packages
       tags: ["base_packages"]
