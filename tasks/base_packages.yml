@@ -66,7 +66,7 @@
     creates: /home/{{ username }}/.local/bin/zed
 
 - name: Install github cli
-  ansible.bultin.shell: |
+  ansible.builtin.shell: |
     sudo dnf config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo
     sudo dnf install gh -y --repo gh-cli
   args:
