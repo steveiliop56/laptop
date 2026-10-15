@@ -23,6 +23,25 @@
     chdir: /tmp/tela-icon-theme
     creates: /home/{{ username }}/.local/share/icons/Tela/index.theme
 
+- name: Download Ghostty themes
+  ansible.builtin.git:
+    repo: https://github.com/mbadolato/iTerm2-Color-Schemes
+    dest: /tmp/iterm2-color-schemes
+
+- name: Ensure Ghostty themes directory exists
+  ansible.builtin.file:
+    path: "/usr/share/ghostty/themes"
+    state: directory
+    mode: "0755"
+
+- name: Copy Ghostty themes
+  become: true
+  ansible.builtin.copy:
+    src: "/tmp/iterm2-color-schemes/ghostty"
+    dest: "/usr/share/ghostty/themes"
+    remote_src: true
+    mode: "0644"
+
 - name: Set Ghostty theme
   ansible.builtin.lineinfile:
     path: "/home/{{ username }}/.config/ghostty/config"
