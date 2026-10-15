@@ -10,13 +10,22 @@
     dest: "/tmp/jetbrains-toolbox.tar.gz"
     mode: "0644"
 
-- name: Install JetBrains toolbox
+- name: Create JetBrains Toolbox directory
+  become: true
+  ansible.builtin.file:
+    path: /opt/jetbrains-toolbox
+    state: directory
+    mode: "0755"
+
+- name: Install JetBrains Toolbox
   become: true
   ansible.builtin.unarchive:
-    src: "/tmp/jetbrains-toolbox.tar.gz"
-    dest: "/opt"
+    src: /tmp/jetbrains-toolbox.tar.gz
+    dest: /opt/jetbrains-toolbox
     remote_src: true
-    creates: "/opt/jetbrains-toolbox/bin/jetbrains-toolbox"
+    extra_opts:
+      - --strip-components=1
+    creates: /opt/jetbrains-toolbox/bin/jetbrains-toolbox
 
 - name: Ensure Atuin config directory
   ansible.builtin.file:
