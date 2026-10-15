@@ -3,24 +3,42 @@
 username: stavros
 
 # What to configure
-# Base packages includes everything that I use daily
-configure_base_packages: true
+# Installs every app that I use daily
+configure_packages: true
 
-# Developer tools are the tools that I use to develop my software
-configure_dev_tools: true
+# Install my development tools
+configure_development: true
 
-# My prefered grub themes, icon themes and other tweaks
-configure_customization: true
+# QoL improvements and customization
+configure_theme: true
 
-# Miscellaneous configuration
-configure_misc: true
+# Enable the newly installed services
+configure_services: true
 
 # Developer options
+# JetBrains toolbox version to install
+jetbrains_toolbox_version: 3.8.1.88030
+
 # Go version to install
-go_version: 1.25.6
+go_version: 1.27.2
 
 # NVM version to install
-nvm_version: 0.40.3
+nvm_version: 0.40.8
+
+# Node version to install
+node_version: stable
+
+# PNPM version to install
+pnpm_version: 11.1.2
+
+# Go tools to install
+go_tools:
+  - github.com/air-verse/air@v1.67.4
+  - github.com/go-delve/delve/cmd/dlv@v1.27.2
+  - github.com/golang-migrate/migrate/v4/cmd/migrate@v4.20.1
+  - sigs.k8s.io/controller-tools/cmd/controller-gen@v0.22.0
+  - github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
+  - github.com/norwoodj/helm-docs/cmd/helm-docs@v1.14.2
 
 # Other options
 # Tailscale authentication key

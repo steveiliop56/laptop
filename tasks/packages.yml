@@ -1,0 +1,154 @@
+---
+- name: Add Microsoft repo
+  become: true
+  ansible.builtin.yum_repository:
+    name: code
+    description: Visual Studio Code
+    file: vscode
+    baseurl: https://packages.microsoft.com/yumrepos/vscode
+    enabled: true
+    gpgcheck: true
+    gpgkey: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+
+- name: Add GitHub repo
+  become: true
+  ansible.builtin.yum_repository:
+    name: gh-cli
+    description: GitHub CLI
+    file: gh-cli
+    baseurl: https://cli.github.com/packages/rpm
+    enabled: true
+    gpgcheck: true
+    gpgkey: https://cli.github.com/packages/githubcli-archive-keyring.asc
+    state: present
+
+- name: Add Tailscale repo
+  become: true
+  ansible.builtin.yum_repository:
+    name: tailscale-stable
+    description: Tailscale stable
+    file: tailscale-stable
+    baseurl: https://pkgs.tailscale.com/stable/fedora/$basearch
+    enabled: true
+    gpgcheck: true
+    gpgkey: https://pkgs.tailscale.com/stable/fedora/repo.gpg
+    state: present
+
+- name: Add Docker repo
+  become: true
+  ansible.builtin.yum_repository:
+    name: docker-ce-stable
+    description: Docker CE Stable
+    file: docker-ce-stable
+    baseurl: https://download.docker.com/linux/fedora/$releasever/$basearch/stable
+    enabled: true
+    gpgcheck: true
+    gpgkey: https://download.docker.com/linux/fedora/gpg
+    state: present
+
+- name: Add Terra bootstrap repo
+  become: true
+  ansible.builtin.yum_repository:
+    name: terra-bootstrap
+    description: Terra Bootstrap
+    file: terra-bootstrap
+    baseurl: https://repos.fyralabs.com/terra$releasever
+    enabled: true
+    gpgcheck: false
+    state: present
+
+- name: Install Terra
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - terra-release
+    state: present
+    update_cache: true
+
+- name: Remove Terra boostrap repo
+  become: true
+  ansible.builtin.yum_repository:
+    name: terra-bootstrap
+    file: terra-bootstrap
+    state: absent
+
+- name: Install DNF packages
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - gparted
+      - syncthing
+      - btop
+      - gnome-extensions-app
+      - gnome-tweaks
+      - steam
+      - code
+      - python3-pip
+      - ghostty
+      - dnf5-plugins
+      - zed-editor
+      - gh-cli
+      - tailscale
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+      - python3-psutil
+      - atuin
+      - sdrpp
+      - gimp
+      - ansible
+      - make
+      - kubectl
+      - helm
+    state: present
+    update_cache: true
+
+- name: Install Chrome
+  become: true
+  ansible.builtin.dnf:
+    name: https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+    disable_gpg_check: true
+    state: present
+
+- name: Install OpenCode
+  become: true
+  ansible.builtin.dnf:
+    name: https://opencode.ai/files/bin/2.0.29/opencode-desktop-linux-x86_64.rpm
+    disable_gpg_check: true
+    state: present
+
+- name: Install amdgpu_top
+  become: true
+  ansible.builtin.dnf:
+    name: https://github.com/Umio-Yasuno/amdgpu_top/releases/download/v0.11.0/amdgpu_top-0.11.0-1.x86_64.rpm
+    disable_gpg_check: true
+    state: present
+
+- name: Install Flatpak packages
+  community.general.flatpak:
+    name:
+      - ca.desrt.dconf-editor
+      - cc.arduino.IDE2
+      - com.discordapp.Discord
+      - com.github.Matoking.protontricks
+      - com.github.tchx84.Flatseal
+      - com.prusa3d.PrusaSlicer
+      - com.spotify.Client
+      - com.usebruno.Bruno
+      - com.viber.Viber
+      - fr.handbrake.ghb
+      - it.mijorus.whisper
+      - md.obsidian.Obsidian
+      - org.prismlauncher.PrismLauncher
+      - org.sqlitebrowser.sqlitebrowser
+    state: present
+
+- name: Add the user to the Docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ username }}"
+    groups: docker
+    append: true

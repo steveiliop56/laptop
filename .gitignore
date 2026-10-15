@@ -1,2 +1,5 @@
 # setup config
-config.yml
+/config.yml
+
+# ansible
+/.ansible

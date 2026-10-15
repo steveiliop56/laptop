@@ -1,0 +1,140 @@
+---
+- name: Install oh-my-bash
+  ansible.builtin.shell: bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" --unattended
+  args:
+    creates: /home/{{ username }}/.oh-my-bash/oh-my-bash.sh
+
+- name: Download JetBrains toolbox
+  ansible.builtin.get_url:
+    url: "https://download.jetbrains.com/toolbox/jetbrains-toolbox-{{ jetbrains_toolbox_version }}.tar.gz"
+    dest: "/tmp/jetbrains-toolbox.tar.gz"
+    mode: "0644"
+
+- name: Install JetBrains toolbox
+  become: true
+  ansible.builtin.unarchive:
+    src: "/tmp/jetbrains-toolbox.tar.gz"
+    dest: "/opt/jetbrains-toolbox"
+    remote_src: true
+    creates: "/opt/jetbrains-toolbox/bin/jetbrains-toolbox"
+
+- name: Initialize default atuin config
+  ansible.builtin.shell: atuin default-config | tee /home/{{ username }}/.config/atuin/atuin.toml
+  args:
+    creates: /home/{{ username }}/.config/atuin/atuin.toml
+
+- name: Configure atuin line-height
+  ansible.builtin.lineinfile:
+    path: "/home/{{ username }}/.config/atuin/atuin.toml"
+    regexp: "^# inline_height ="
+    line: "inline_height = 0"
+    create: true
+    state: present
+
+- name: Initialize Atuin in Bash
+  ansible.builtin.lineinfile:
+    path: "/home/{{ username }}/.bashrc"
+    regexp: '^\s*eval "\$\(atuin init bash.*\)"'
+    line: 'eval "$(atuin init bash)"'
+    state: present
+
+- name: Check installed Go version
+  ansible.builtin.command: /usr/local/go/bin/go version
+  register: installed_go
+  changed_when: false
+  failed_when: false
+
+- name: Remove outdated Go installation
+  become: true
+  ansible.builtin.file:
+    path: /usr/local/go
+    state: absent
+  when: "(' go' ~ go_version ~ ' ') not in installed_go.stdout"
+
+- name: Download Go
+  become: true
+  ansible.builtin.get_url:
+    url: "https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+    mode: "0644"
+
+- name: Install Go
+  become: true
+  ansible.builtin.unarchive:
+    src: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+    dest: "/usr/local"
+    remote_src: true
+    creates: "/usr/local/go/bin/go"
+
+- name: Configure Go path
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/profile.d/go.sh
+    content: |
+      export PATH=$PATH:/usr/local/go/bin
+    mode: "0644"
+
+- name: Add Go local path
+  ansible.builtin.blockinfile:
+    path: "/home/{{ username }}/.bashrc"
+    marker: "# go local - {mark}"
+    block: |
+      export PATH="$PATH:$HOME/go/bin:$HOME/.local/bin"
+
+- name: Install nvm
+  become_user: "{{ username }}"
+  ansible.builtin.git:
+    repo: https://github.com/nvm-sh/nvm.git
+    dest: "/home/{{ username }}/.nvm"
+    version: "v{{ nvm_version }}"
+
+- name: Configure nvm
+  ansible.builtin.blockinfile:
+    path: "/home/{{ username }}/.bashrc"
+    marker: "# nvm - {mark}"
+    block: |
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+- name: Install Node.js
+  ansible.builtin.shell: |
+    . "/home/{{ username }}/.nvm/nvm.sh"
+    nvm install "{{ node_version }}"
+    nvm alias default "{{ node_version }}"
+  args:
+    executable: /bin/bash
+    creates: "/home/{{ username }}/.nvm/versions/node/v{{ node_version }}/bin/node"
+
+- name: Install PNPM
+  ansible.builtin.shell: |
+    . "/home/{{ username }}/.nvm/nvm.sh"
+    npm install -g pnpm@{{ pnpm_version }}
+  args:
+    executable: /bin/bash
+    creates: "/home/{{ username }}/.nvm/versions/node/v{{ node_version }}/bin/pnpm"
+
+- name: Install Go tools
+  ansible.builtin.command:
+    argv:
+      - /usr/local/go/bin/go
+      - install
+      - "{{ item }}"
+    creates: "/home/{{ username }}/go/bin/{{ item.split('@')[0].split('/')[-1] }}"
+  loop: "{{ go_tools }}"
+  environment:
+    HOME: "/home/{{ username }}"
+    GOPATH: "/home/{{ username }}/go"
+    PATH: "/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin"
+
+- name: Create WakaTime config
+  ansible.builtin.copy:
+    dest: "/home/{{ username }}/.wakatime.cfg"
+    content: |
+      [settings]
+      api_url = {{ wakatime_api_url }}
+      api_key = {{ wakatime_api_key }}
+    owner: "{{ username }}"
+    mode: "0600"
+  no_log: true
+  when: wakatime_api_url is defined and wakatime_api_key is defined and wakatime_api_url != "" and wakatime_api_key != ""

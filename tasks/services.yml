@@ -1,0 +1,12 @@
+---
+- name: Start Tailscale
+  become: true
+  ansible.builtin.command: tailscale up --auth-key={{ tailscale_auth_key }}
+  when: tailscale_auth_key is defined and tailscale_auth_key != ""
+
+- name: Start Docker
+  become: true
+  ansible.builtin.systemd_service:
+    state: started
+    enabled: true
+    name: docker
