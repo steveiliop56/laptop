@@ -18,8 +18,14 @@
     remote_src: true
     creates: "/opt/jetbrains-toolbox/bin/jetbrains-toolbox"
 
+- name: Ensure atuin config directory
+  ansible.builtin.file:
+    path: "/home/{{ username }}/.config/atuin"
+    state: directory
+    mode: "0755"
+
 - name: Initialize default atuin config
-  ansible.builtin.shell: atuin default-config | tee /home/{{ username }}/.config/atuin/atuin.toml
+  ansible.builtin.shell: atuin default-config | tee /home/{{ username }}/.config/atuin/config.toml
   args:
     creates: /home/{{ username }}/.config/atuin/atuin.toml
 
