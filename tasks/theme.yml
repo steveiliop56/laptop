@@ -4,6 +4,7 @@
   ansible.builtin.git:
     repo: https://github.com/vinceliuice/Elegant-grub2-themes.git
     dest: /tmp/elegant-grub2-themes
+    version: f8a8d41c8f306f8bdfae41db1a425cf0a2451477
 
 - name: Install Grub theme
   become: true
@@ -16,6 +17,7 @@
   ansible.builtin.git:
     repo: https://github.com/vinceliuice/Tela-icon-theme.git
     dest: /tmp/tela-icon-theme
+    version: a1fffc5bfab716bd022dd228ee96fe3965cdb33d
 
 - name: Install Tela icon theme
   ansible.builtin.command: bash install.sh
@@ -27,6 +29,7 @@
   ansible.builtin.git:
     repo: https://github.com/mbadolato/iTerm2-Color-Schemes
     dest: /tmp/iterm2-color-schemes
+    version: 21f281d0834846eef984f75774638e7d16bac068
 
 - name: Ensure Ghostty themes directory exists
   become: true
@@ -50,6 +53,7 @@
     line: "theme = Dark+"
     create: true
     state: present
+    mode: "0644"
 
 - name: Set oh-my-bash theme
   ansible.builtin.lineinfile:
@@ -58,6 +62,7 @@
     line: 'OSH_THEME="pure"'
     create: true
     state: present
+    mode: "0644"
 
 - name: Set Tela icon theme as default
   community.general.dconf:

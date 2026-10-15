@@ -29,7 +29,7 @@
   become: true
   ansible.builtin.user:
     name: "{{ username }}"
-    groups: plugden
+    groups: plugdev
     append: true
 
 - name: Clone RTL-SDR repository
@@ -45,24 +45,33 @@
     path: /usr/local/bin/rtl_test
   register: rtl_sdr_installed
 
+- name: Determine whether RTL-SDR needs to be built
+  ansible.builtin.set_fact:
+    rtl_sdr_needs_install: "{{ rtl_sdr_repo.changed or not rtl_sdr_installed.stat.exists }}"
+
 - name: Configure RTL-SDR
   become: true
   ansible.builtin.command:
     cmd: cmake -S /opt/rtl-sdr-blog -B /opt/rtl-sdr-blog/build -DINSTALL_UDEV_RULES=ON
-  when: rtl_sdr_repo.changed or not rtl_sdr_installed.stat.exists
-  register: rtl_sdr_config
+  when: rtl_sdr_needs_install
+  changed_when: true
 
 - name: Build RTL-SDR
   become: true
   ansible.builtin.command:
     cmd: cmake --build /opt/rtl-sdr-blog/build --parallel 2
-  when: rtl_sdr_config.changed
+  when: rtl_sdr_needs_install
+  changed_when: true
 
 - name: Install RTL-SDR
   become: true
   ansible.builtin.command:
     cmd: cmake --install /opt/rtl-sdr-blog/build
-  when: rtl_sdr_config.changed
+  when: rtl_sdr_needs_install
+  changed_when: true
+  notify:
+    - Update RTL-SDR library cache
+    - Reload RTL-SDR udev rules
 
 - name: Configure RTL-SDR library path
   become: true
@@ -70,13 +79,7 @@
     dest: /etc/ld.so.conf.d/rtl-sdr.conf
     content: "/usr/local/lib64\n/usr/local/lib\n"
     mode: "0644"
-  register: rtl_sdr_libpath
-
-- name: Update library cache
-  become: true
-  ansible.builtin.command:
-    cmd: ldconfig
-  when: rtl_sdr_config.changed or rtl_sdr_libpath.changed
+  notify: Update RTL-SDR library cache
 
 - name: Blacklist DVB-T driver
   become: true
@@ -84,9 +87,3 @@
     dest: /etc/modprobe.d/rtl-sdr.conf
     content: "blacklist dvb_usb_rtl28xxu\n"
     mode: "0644"
-
-- name: Reload udev rules
-  become: true
-  ansible.builtin.command:
-    cmd: udevadm control --reload-rules
-  when: rtl_sdr_config.changed

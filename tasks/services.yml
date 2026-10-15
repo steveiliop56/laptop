@@ -1,8 +1,19 @@
 ---
+- name: Check Tailscale status
+  ansible.builtin.command: tailscale status --json
+  register: tailscale_status
+  changed_when: false
+  failed_when: false
+  when: tailscale_auth_key is defined and tailscale_auth_key != ""
+
 - name: Start Tailscale
   become: true
   ansible.builtin.command: tailscale up --auth-key={{ tailscale_auth_key }}
-  when: tailscale_auth_key is defined and tailscale_auth_key != ""
+  when:
+    - tailscale_auth_key is defined and tailscale_auth_key != ""
+    - tailscale_status.rc != 0 or (tailscale_status.stdout | from_json).BackendState != "Running"
+  changed_when: true
+  no_log: true
 
 - name: Start Docker
   become: true

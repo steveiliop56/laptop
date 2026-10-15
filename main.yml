@@ -12,22 +12,38 @@
         name: "{{ username }}-laptop"
         use: systemd
 
-    - import_tasks: tasks/packages.yml
+    - name: Configure packages
+      ansible.builtin.import_tasks: tasks/packages.yml
       when: configure_packages
       tags: ["packages"]
 
-    - import_tasks: tasks/development.yml
+    - name: Configure development tools
+      ansible.builtin.import_tasks: tasks/development.yml
       when: configure_development
       tags: ["development"]
 
-    - import_tasks: tasks/theme.yml
+    - name: Configure theme
+      ansible.builtin.import_tasks: tasks/theme.yml
       when: configure_theme
       tags: ["theme"]
 
-    - import_tasks: tasks/services.yml
+    - name: Configure services
+      ansible.builtin.import_tasks: tasks/services.yml
       when: configure_services
       tags: ["services"]
 
-    - import_tasks: tasks/rtlsdr.yml
+    - name: Configure RTL-SDR support
+      ansible.builtin.import_tasks: tasks/rtlsdr.yml
       when: configure_rtlsdr
       tags: ["rtlsdr"]
+
+  handlers:
+    - name: Update RTL-SDR library cache
+      become: true
+      ansible.builtin.command: ldconfig
+      changed_when: true
+
+    - name: Reload RTL-SDR udev rules
+      become: true
+      ansible.builtin.command: udevadm control --reload-rules
+      changed_when: true

@@ -25,17 +25,25 @@
     mode: "0755"
 
 - name: Initialize default Atuin config
-  ansible.builtin.shell: atuin default-config | tee /home/{{ username }}/.config/atuin/config.toml
-  args:
-    creates: /home/{{ username }}/.config/atuin/atuin.toml
+  ansible.builtin.command: atuin default-config
+  register: atuin_default_config
+  changed_when: false
+
+- name: Write default Atuin config if missing
+  ansible.builtin.copy:
+    dest: "/home/{{ username }}/.config/atuin/atuin.toml"
+    content: "{{ atuin_default_config.stdout }}\n"
+    force: false
+    mode: "0600"
 
 - name: Configure Atuin line-height
   ansible.builtin.lineinfile:
     path: "/home/{{ username }}/.config/atuin/atuin.toml"
-    regexp: "^# inline_height ="
+    regexp: '^#?\s*inline_height\s*='
     line: "inline_height = 0"
     create: true
     state: present
+    mode: "0600"
 
 - name: Add preexec hook for Atuin
   ansible.builtin.blockinfile:
@@ -95,6 +103,7 @@
       export PATH="$PATH:$HOME/go/bin:$HOME/.local/bin"
 
 - name: Install nvm
+  become: true
   become_user: "{{ username }}"
   ansible.builtin.git:
     repo: https://github.com/nvm-sh/nvm.git
