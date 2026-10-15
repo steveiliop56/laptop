@@ -11,6 +11,18 @@
     gpgkey: https://packages.microsoft.com/keys/microsoft.asc
     state: present
 
+- name: Add Kubernetes repo
+  become: true
+  ansible.builtin.yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    file: kubernetes
+    baseurl: https://pkgs.k8s.io/core:/stable:/v1.37/rpm/
+    enabled: true
+    gpgcheck: true
+    gpgkey: https://pkgs.k8s.io/core:/stable:/v1.37/rpm/repodata/repomd.xml.key
+    state: present
+
 - name: Add GitHub repo
   become: true
   ansible.builtin.yum_repository:
@@ -87,8 +99,8 @@
       - python3-pip
       - ghostty
       - dnf5-plugins
-      - zed-editor
-      - gh-cli
+      - zed
+      - gh
       - tailscale
       - docker-ce
       - docker-ce-cli
