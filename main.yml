@@ -27,3 +27,7 @@
     - import_tasks: tasks/services.yml
       when: configure_services
       tags: ["services"]
+
+    - import_tasks: tasks/rtlsdr.yml
+      when: configure_rtlsdr
+      tags: ["rtlsdr"]

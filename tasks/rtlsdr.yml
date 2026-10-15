@@ -1,0 +1,92 @@
+---
+- name: Install RTL-SDR dependencies
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - libusb1-devel
+      - git
+      - cmake
+      - pkgconf-pkg-config
+      - gcc
+      - make
+    state: present
+
+- name: Remove existing RTL-SDR packages
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - rtl-sdr
+      - rtl-sdr-devel
+    state: absent
+
+- name: Ensure plugdev group exists
+  become: true
+  ansible.builtin.group:
+    name: plugdev
+    state: present
+
+- name: Add the user to the plugdev group
+  become: true
+  ansible.builtin.user:
+    name: "{{ username }}"
+    groups: plugden
+    append: true
+
+- name: Clone RTL-SDR repository
+  become: true
+  ansible.builtin.git:
+    repo: https://github.com/rtlsdrblog/rtl-sdr-blog.git
+    dest: /opt/rtl-sdr-blog
+    version: master
+  register: rtl_sdr_repo
+
+- name: Check RTL-SDR installation
+  ansible.builtin.stat:
+    path: /usr/local/bin/rtl_test
+  register: rtl_sdr_installed
+
+- name: Configure RTL-SDR
+  become: true
+  ansible.builtin.command:
+    cmd: cmake -S /opt/rtl-sdr-blog -B /opt/rtl-sdr-blog/build -DINSTALL_UDEV_RULES=ON
+  when: rtl_sdr_repo.changed or not rtl_sdr_installed.stat.exists
+  register: rtl_sdr_config
+
+- name: Build RTL-SDR
+  become: true
+  ansible.builtin.command:
+    cmd: cmake --build /opt/rtl-sdr-blog/build --parallel 2
+  when: rtl_sdr_config.changed
+
+- name: Install RTL-SDR
+  become: true
+  ansible.builtin.command:
+    cmd: cmake --install /opt/rtl-sdr-blog/build
+  when: rtl_sdr_config.changed
+
+- name: Configure RTL-SDR library path
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/ld.so.conf.d/rtl-sdr.conf
+    content: "/usr/local/lib64\n/usr/local/lib\n"
+    mode: "0644"
+  register: rtl_sdr_libpath
+
+- name: Update library cache
+  become: true
+  ansible.builtin.command:
+    cmd: ldconfig
+  when: rtl_sdr_config.changed or rtl_sdr_libpath.changed
+
+- name: Blacklist DVB-T driver
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/modprobe.d/rtl-sdr.conf
+    content: "blacklist dvb_usb_rtl28xxu\n"
+    mode: "0644"
+
+- name: Reload udev rules
+  become: true
+  ansible.builtin.command:
+    cmd: udevadm control --reload-rules
+  when: rtl_sdr_config.changed
