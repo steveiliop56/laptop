@@ -18,18 +18,18 @@
     remote_src: true
     creates: "/opt/jetbrains-toolbox/bin/jetbrains-toolbox"
 
-- name: Ensure atuin config directory
+- name: Ensure Atuin config directory
   ansible.builtin.file:
     path: "/home/{{ username }}/.config/atuin"
     state: directory
     mode: "0755"
 
-- name: Initialize default atuin config
+- name: Initialize default Atuin config
   ansible.builtin.shell: atuin default-config | tee /home/{{ username }}/.config/atuin/config.toml
   args:
     creates: /home/{{ username }}/.config/atuin/atuin.toml
 
-- name: Configure atuin line-height
+- name: Configure Atuin line-height
   ansible.builtin.lineinfile:
     path: "/home/{{ username }}/.config/atuin/atuin.toml"
     regexp: "^# inline_height ="
@@ -43,6 +43,13 @@
     regexp: '^\s*eval "\$\(atuin init bash.*\)"'
     line: 'eval "$(atuin init bash)"'
     state: present
+
+- name: Configure Atuin in Bash
+  ansible.builtin.blockinfile:
+    path: "/home/{{ username }}/.bashrc"
+    marker: "# atuin - {mark}"
+    block: |
+      eval "$(atuin init bash)"
 
 - name: Check installed Go version
   ansible.builtin.command: /usr/local/go/bin/go version
