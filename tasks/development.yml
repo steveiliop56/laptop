@@ -14,7 +14,7 @@
   become: true
   ansible.builtin.unarchive:
     src: "/tmp/jetbrains-toolbox.tar.gz"
-    dest: "/opt/jetbrains-toolbox"
+    dest: "/opt"
     remote_src: true
     creates: "/opt/jetbrains-toolbox/bin/jetbrains-toolbox"
 
