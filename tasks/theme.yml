@@ -38,10 +38,10 @@
 - name: Copy Ghostty themes
   become: true
   ansible.builtin.copy:
-    src: "/tmp/iterm2-color-schemes/ghostty"
-    dest: "/usr/share/ghostty/themes"
+    src: /tmp/iterm2-color-schemes/ghostty/
+    dest: /usr/share/ghostty/themes/
     remote_src: true
-    mode: "0644"
+    mode: preserve
 
 - name: Set Ghostty theme
   ansible.builtin.lineinfile:
