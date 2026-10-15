@@ -29,6 +29,7 @@
     dest: /tmp/iterm2-color-schemes
 
 - name: Ensure Ghostty themes directory exists
+  become: true
   ansible.builtin.file:
     path: "/usr/share/ghostty/themes"
     state: directory

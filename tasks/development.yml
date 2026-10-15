@@ -19,7 +19,6 @@
     creates: "/opt/jetbrains-toolbox/bin/jetbrains-toolbox"
 
 - name: Ensure Atuin config directory
-  become: true
   ansible.builtin.file:
     path: "/home/{{ username }}/.config/atuin"
     state: directory
