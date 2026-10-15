@@ -37,12 +37,12 @@
     create: true
     state: present
 
-- name: Initialize Atuin in Bash
-  ansible.builtin.lineinfile:
+- name: Add preexec hook for Atuin
+  ansible.builtin.blockinfile:
     path: "/home/{{ username }}/.bashrc"
-    regexp: '^\s*eval "\$\(atuin init bash.*\)"'
-    line: 'eval "$(atuin init bash)"'
-    state: present
+    marker: "# bash-preexec - {mark}"
+    block: |
+      source /usr/libexec/bash-preexec/bash-preexec.sh
 
 - name: Configure Atuin in Bash
   ansible.builtin.blockinfile:

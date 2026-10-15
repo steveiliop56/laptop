@@ -115,6 +115,7 @@
       - make
       - kubectl
       - helm
+      - bash-preexec
     state: present
     update_cache: true
 
