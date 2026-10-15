@@ -15,9 +15,6 @@ configure_theme: true
 # Enable the newly installed services
 configure_services: true
 
-# Add the RTL-SDR drivers
-configure_rtlsdr: true
-
 # Developer options
 # JetBrains toolbox version to install
 jetbrains_toolbox_version: 3.8.1.88030

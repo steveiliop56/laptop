@@ -116,6 +116,9 @@
       - kubectl
       - helm
       - bash-preexec
+      - rtl-sdr
+      - soapy-rtlsdr
+      - sdrpp
     state: present
     update_cache: true
 
